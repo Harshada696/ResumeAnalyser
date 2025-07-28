@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Resume Analyzer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f8e1f4, #e0d3ff, #f3e7ff, #fbeaff);
+    background-size: 300% 300%;
+    animation: gradientShift 15s ease infinite;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .container {
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 650px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    animation: fadeIn 1s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #5b2c6f;
+    font-size: 1.8em;
+  }
+
+  .upload-area {
+    position: relative;
+    border: 2px dashed #b97bcb;
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    margin-bottom: 20px;
+    transition: 0.4s;
+  }
+
+  .upload-area:hover {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: #a749c9;
+  }
+
+  .upload-area input[type="file"] {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    cursor: pointer;
+  }
+
+  .upload-text {
+    font-size: 1em;
+    color: #6f42c1;
+    font-weight: bold;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    background: linear-gradient(to right, #d066e3, #9b59b6);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+    transition: all 0.3s ease-in-out;
+  }
+
+  button:hover {
+    transform: scale(1.05);
+    background: linear-gradient(to right, #b24bcf, #7d3c98);
+    box-shadow: 0 6px 20px rgba(155, 89, 182, 0.6);
+  }
+
+  .result {
+    margin-top: 25px;
+  }
+
+  .job-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.4);
+    padding: 15px;
+    border-left: 6px solid #ba68c8;
+    margin-bottom: 15px;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 10px rgba(138, 43, 226, 0.1);
+  }
+
+  .job-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(138, 43, 226, 0.2);
+  }
+
+  .job-card img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .job-info {
+    flex: 1;
+  }
+
+  .title {
+    font-weight: 600;
+    font-size: 1.05em;
+    color: #4a0072;
+  }
+
+  .score {
+    font-size: 0.9em;
+    color: #555;
+  }
+
+  .apply-btn {
+    background: #ab47bc;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    cursor: pointer;
+    box-shadow: 0 0 6px #ce93d8;
+    transition: 0.3s;
+  }
+
+  .apply-btn:hover {
+    background: #9c27b0;
+    box-shadow: 0 0 10px #ce93d8;
+  }
+
+  .highlight {
+    animation: pulse 2s infinite;
+    border-left-color: #ab47bc !important;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0px #ba68c844; }
+    50% { transform: scale(1.02); box-shadow: 0 0 12px #ba68c8aa; }
+    100% { transform: scale(1); box-shadow: 0 0 0px #ba68c844; }
+  }
+
+  @media (max-width: 600px) {
+    .job-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .apply-btn {
+      width: 100%;
+      margin-top: 10px;
+    }
+  }
+</style>
+
+</head>
+<body>
+  <div class="container">
+    <h2>AI Resume Analyzer</h2>
+
+    <div class="upload-area">
+      <span class="upload-text">📁 Click to upload your resume</span>
+      <input type="file" id="resume" />
+    </div>
+
+    <button onclick="uploadResume()">🚀 Analyze</button>
+    <div class="result" id="output"></div>
+  </div>
+
+  <script>
+    const roleLogos = {
+      "Web Developer": "https://cdn-icons-png.flaticon.com/512/1006/1006362.png",
+      "Android Developer": "https://cdn-icons-png.flaticon.com/512/226/226770.png",
+      "Data Scientist": "https://cdn-icons-png.flaticon.com/512/3209/3209265.png",
+      "Cybersecurity Analyst": "https://cdn-icons-png.flaticon.com/512/3064/3064197.png",
+      "Graphic Designer": "https://cdn-icons-png.flaticon.com/512/1055/1055687.png",
+      "AI/ML Engineer": "https://cdn-icons-png.flaticon.com/512/1157/1157109.png",
+      "Cloud Engineer": "https://cdn-icons-png.flaticon.com/512/4298/4298925.png",
+      "Civil Engineer": "https://cdn-icons-png.flaticon.com/512/3004/3004459.png",
+      "UI/UX Designer": "https://cdn-icons-png.flaticon.com/512/4151/4151070.png"
+    };
+
+    const applyLinks = {
+      "Web Developer": "https://www.naukri.com/web-developer-jobs",
+      "Android Developer": "https://www.linkedin.com/jobs/android-developer-jobs",
+      "Data Scientist": "https://internshala.com/internships/data-science-internship",
+      "Cybersecurity Analyst": "https://www.naukri.com/cyber-security-jobs",
+      "Graphic Designer": "https://internshala.com/internships/graphic-design-internship",
+      "AI/ML Engineer": "https://www.linkedin.com/jobs/ai-ml-jobs",
+      "Cloud Engineer": "https://www.naukri.com/cloud-engineer-jobs",
+      "Civil Engineer": "https://internshala.com/internships/civil-internship",
+      "UI/UX Designer": "https://www.linkedin.com/jobs/ui-ux-designer-jobs"
+    };
+
+    async function uploadResume() {
+      const fileInput = document.getElementById('resume');
+      const file = fileInput.files[0];
+      const output = document.getElementById('output');
+
+      output.innerHTML = "⏳ Analyzing...";
+
+      if (!file) {
+        output.innerHTML = "❌ Please select a file.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('http://localhost:8900/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.match_scores) {
+          output.innerHTML = "<h3>Top Job Matches:</h3>";
+          data.match_scores.slice(0, 5).forEach(([role, score], idx) => {
+            const logo = roleLogos[role] || "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+            const link = applyLinks[role] || `https://www.google.com/search?q=${encodeURIComponent(role + " jobs")}`;
+            output.innerHTML += `
+              <div class="job-card ${idx === 0 ? 'highlight' : ''}">
+                <img src="${logo}" alt="${role}" />
+                <div class="job-info">
+                  <div class="title">${role}</div>
+                  <div class="score">Match Score: ${score.toFixed(2)}</div>
+                </div>
+                <a href="${link}" target="_blank">
+                  <button class="apply-btn">Apply</button>
+                </a>
+              </div>
+            `;
+          });
+        } else {
+          output.innerHTML = "❌ Could not analyze resume.";
+        }
+
+      } catch (err) {
+        output.innerHTML = "❌ Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
