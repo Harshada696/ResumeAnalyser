@@ -2,21 +2,41 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import PyPDF2
 import spacy
-import os
 import json
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+import subprocess
+import sys
+
+# Log installed packages (useful for Render debugging)
+print("=== Installed Packages ===")
+print(subprocess.check_output([sys.executable, "-m", "pip", "freeze"]).decode())
+print("==========================")
 
 app = Flask(__name__)
 CORS(app)
 
-# Load NLP models
-nlp = spacy.load("en_core_web_sm")
+# Load SpaCy NLP model
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    import spacy.cli
+    spacy.cli.download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
+
+# Load SentenceTransformer model
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# Load job roles data
-with open("job_roles.json", "r") as f:
-    job_data = json.load(f)
+# Load job roles data from JSON
+try:
+    with open("job_roles.json", "r") as f:
+        job_data = json.load(f)
+except FileNotFoundError:
+    job_data = {
+        "Web Developer": "HTML, CSS, JavaScript, React, backend, frontend",
+        "Data Scientist": "Python, pandas, numpy, machine learning, statistics",
+        "Android Developer": "Kotlin, Java, Android Studio, mobile apps"
+    }
 
 job_roles = list(job_data.keys())
 job_embeddings = {
@@ -28,7 +48,9 @@ def extract_text(file_stream):
     reader = PyPDF2.PdfReader(file_stream)
     text = ""
     for page in reader.pages:
-        text += page.extract_text()
+        page_text = page.extract_text()
+        if page_text:
+            text += page_text
     return text
 
 
@@ -60,10 +82,10 @@ def upload_resume():
         top_matches = match_scores[:5]
 
         response = {
-            "message": f"Resume '{file.filename}' processed.",
+            "message": f"Resume '{file.filename}' processed successfully.",
             "skills": skills,
             "match_scores": top_matches,
-            "predicted_domain": top_matches[0][0]
+            "predicted_domain": top_matches[0][0] if top_matches else "N/A"
         }
         return jsonify(response)
 
