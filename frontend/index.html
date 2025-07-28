@@ -243,7 +243,8 @@
       formData.append('file', file);
 
       try {
-       const res = await fetch('https://YOUR-BACKEND-RENDER-URL/upload', {
+       const res = await fetch('https://resumeanalyserai.onrender.com/upload', {
+
           method: 'POST',
           body: formData
         });
