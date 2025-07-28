@@ -1,11 +1,9 @@
 services:
   - type: web
-    name: resume-backend
+    name: ResumeAnalyserAi
     env: python
     plan: free
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: python backend/app.py
-    envVars:
-      - key: FLASK_ENV
-        value: production
-    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    rootDir: backend
+    autoDeploy: true
