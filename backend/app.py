@@ -25,7 +25,9 @@ except OSError:
     nlp = spacy.load("en_core_web_sm")
 
 # Load SentenceTransformer model
-model = SentenceTransformer('all-MiniLM-L6-v2')
+#model = SentenceTransformer('all-MiniLM-L6-v2')--alternative for better performance (but take more memory )
+model = SentenceTransformer('paraphrase-MiniLM-L3-v2')
+
 
 # Load job roles data from JSON
 try:
