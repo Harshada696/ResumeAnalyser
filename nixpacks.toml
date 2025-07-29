@@ -4,5 +4,8 @@ nixPkgs = ["python311Full"]
 [phases.install]
 cmds = ["pip install -r backend/requirements.txt"]
 
+[phases.build]
+cmds = []
+
 [phases.start]
 cmd = "gunicorn backend.app:app"
