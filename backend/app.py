@@ -26,8 +26,8 @@ except OSError:
     nlp = spacy.load("en_core_web_sm")
 
 # Load SentenceTransformer model
-#model = SentenceTransformer('all-MiniLM-L6-v2')--alternative for better performance (but take more memory )
-model = SentenceTransformer('paraphrase-MiniLM-L3-v2')
+model = SentenceTransformer('all-MiniLM-L6-v2')--alternative for better performance (but take more memory )
+#model = SentenceTransformer('paraphrase-MiniLM-L3-v2')
 
 
 # Load job roles data from JSON
@@ -98,5 +98,6 @@ def upload_resume():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    app.run(debug=False, host="0.0.0.0", port=port)
+    app.run(debug=True, port=8900)
+    #port = int(os.environ.get("PORT", 8000))
+    #app.run(debug=False, host="0.0.0.0", port=port)
